@@ -25,7 +25,7 @@ instance instDecidableDisjoint (m₁ m₂ : Std.ExtHashMap α β) :
   | false => isFalse (mt (isDisjoint_iff m₁ m₂).mpr (by simp [h]))
 
 /-- Merges two maps when they are disjoint, returning `none` if their
-    keys overlap. Mirrors the Rocq `du` function. -/
+    keys overlap. -/
 def disjointUnion (m₁ m₂ : Std.ExtHashMap α β) : Option (Std.ExtHashMap α β) :=
   if isDisjoint m₁ m₂ then some (m₁ ∪ m₂) else none
 
