@@ -83,10 +83,15 @@ end Std.ExtHashMap
 
 /-- A "maybe-map": either a concrete hash map or an overlap sentinel,
     isomorphic to `Option (Std.ExtHashMap α β)`. -/
-inductive MMap (α : Type u) (β : Type v) [BEq α] [Hashable α]
-    [EquivBEq α] [LawfulHashable α] where
+inductive MMap (α : Type u) (β : Type v) [BEq α] [Hashable α] where
   | none : MMap α β
   | some : Std.ExtHashMap α β → MMap α β
+
+instance [BEq α] [Hashable α] : EmptyCollection (MMap α β) where
+  emptyCollection := .some Std.ExtHashMap.emptyWithCapacity
+
+instance [BEq α] [Hashable α] : Inhabited (MMap α β) where
+  default := ∅
 
 namespace MMap
 
