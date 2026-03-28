@@ -1,0 +1,6 @@
+name = "HeapletwiseLeanSepLog"
+version = "0.1.0"
+defaultTargets = ["HeapletwiseLeanSepLog"]
+
+[[lean_lib]]
+name = "HeapletwiseLeanSepLog"
