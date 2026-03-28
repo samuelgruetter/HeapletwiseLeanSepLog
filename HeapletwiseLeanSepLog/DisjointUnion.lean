@@ -69,15 +69,15 @@ theorem union_assoc [LawfulBEq α] (a b c : Std.ExtHashMap α β) :
   ext k
   simp only [getElem?_union, Option.or_assoc]
 
-/-- `m₂` is a sub-map of `m₁`: every `(k, v)` pair of `m₂` is present
-    in `m₁` with the same value. -/
+/-- `m₁` is a sub-map of `m₂`: every `(k, v)` pair of `m₁` is present
+    in `m₂` with the same value. -/
 def isSubmap [BEq β] (m₁ m₂ : Std.ExtHashMap α β) : Bool :=
-  (m₂.filter (fun k v => !(m₁[k]? == some v))).isEmpty
+  (m₁.filter (fun k v => !(m₂[k]? == some v))).isEmpty
 
 /-- Subtracts `m₂` from `m₁`: if every `(k, v)` pair of `m₂` is found
     in `m₁`, returns `m₁` with those keys removed; otherwise `none`. -/
 def subtract [BEq β] (m₁ m₂ : Std.ExtHashMap α β) : Option (Std.ExtHashMap α β) :=
-  if isSubmap m₁ m₂ then some (m₁ \ m₂) else none
+  if isSubmap m₂ m₁ then some (m₁ \ m₂) else none
 
 end Std.ExtHashMap
 
