@@ -69,6 +69,16 @@ theorem union_assoc [LawfulBEq α] (a b c : Std.ExtHashMap α β) :
   ext k
   simp only [getElem?_union, Option.or_assoc]
 
+/-- `m₂` is a sub-map of `m₁`: every `(k, v)` pair of `m₂` is present
+    in `m₁` with the same value. -/
+def isSubmap [BEq β] (m₁ m₂ : Std.ExtHashMap α β) : Bool :=
+  (m₂.filter (fun k v => !(m₁[k]? == some v))).isEmpty
+
+/-- Subtracts `m₂` from `m₁`: if every `(k, v)` pair of `m₂` is found
+    in `m₁`, returns `m₁` with those keys removed; otherwise `none`. -/
+def subtract [BEq β] (m₁ m₂ : Std.ExtHashMap α β) : Option (Std.ExtHashMap α β) :=
+  if isSubmap m₁ m₂ then some (m₁ \ m₂) else none
+
 end Std.ExtHashMap
 
 /-- A "maybe-map": either a concrete hash map or an overlap sentinel,
@@ -115,5 +125,16 @@ theorem disjointUnion_assoc [LawfulBEq α] (m₁ m₂ m₃ : MMap α β) :
     simp_all [Std.ExtHashMap.isDisjoint_union_left,
               Std.ExtHashMap.isDisjoint_union_right,
               Std.ExtHashMap.union_assoc]
+
+/-- Subtraction on `MMap`s. Propagates the error sentinel `none` and
+    returns `none` whenever the underlying subtraction fails. -/
+def subtract [BEq β] (m₁ m₂ : MMap α β) : MMap α β :=
+  match m₁, m₂ with
+  | none,   _      => none
+  | _,      none   => none
+  | some a, some b =>
+    match Std.ExtHashMap.subtract a b with
+    | .some m => some m
+    | .none   => none
 
 end MMap
