@@ -126,6 +126,17 @@ theorem disjointUnion_assoc [LawfulBEq α] (m₁ m₂ m₃ : MMap α β) :
               Std.ExtHashMap.isDisjoint_union_right,
               Std.ExtHashMap.union_assoc]
 
+/-- Decidable equality for `MMap`, given decidable equality on values. -/
+instance instDecidableEqMMap [LawfulBEq α] [BEq β] [LawfulBEq β] :
+    DecidableEq (MMap α β)
+  | .none,   .none   => .isTrue rfl
+  | .none,   .some _ => .isFalse (fun h => by cases h)
+  | .some _, .none   => .isFalse (fun h => by cases h)
+  | .some a, .some b =>
+    if h : a = b
+    then .isTrue (congrArg MMap.some h)
+    else .isFalse (fun heq => h (MMap.some.inj heq))
+
 /-- Subtraction on `MMap`s. Propagates the error sentinel `none` and
     returns `none` whenever the underlying subtraction fails. -/
 def subtract [BEq β] (m₁ m₂ : MMap α β) : MMap α β :=
