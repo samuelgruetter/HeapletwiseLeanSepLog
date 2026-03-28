@@ -29,6 +29,46 @@ instance instDecidableDisjoint (m₁ m₂ : Std.ExtHashMap α β) :
 def disjointUnion (m₁ m₂ : Std.ExtHashMap α β) : Option (Std.ExtHashMap α β) :=
   if isDisjoint m₁ m₂ then some (m₁ ∪ m₂) else none
 
+/-- `disjoint` is symmetric. -/
+theorem disjoint_symm (m₁ m₂ : Std.ExtHashMap α β) :
+    disjoint m₁ m₂ ↔ disjoint m₂ m₁ := by
+  simp [disjoint, and_comm]
+
+/-- `isDisjoint` is symmetric. -/
+theorem isDisjoint_symm (m₁ m₂ : Std.ExtHashMap α β) :
+    isDisjoint m₁ m₂ = isDisjoint m₂ m₁ := by
+  rw [Bool.eq_iff_iff, isDisjoint_iff, isDisjoint_iff]
+  exact disjoint_symm m₁ m₂
+
+/-- Disjointness splits over union on the left. -/
+theorem disjoint_union_left (a b c : Std.ExtHashMap α β) :
+    disjoint (a ∪ b) c ↔ disjoint a c ∧ disjoint b c := by
+  simp only [disjoint, mem_union_iff, not_and, or_imp, forall_and]
+
+/-- `isDisjoint (a ∪ b) c = isDisjoint a c && isDisjoint b c`. -/
+theorem isDisjoint_union_left (a b c : Std.ExtHashMap α β) :
+    isDisjoint (a ∪ b) c = (isDisjoint a c && isDisjoint b c) := by
+  rw [Bool.eq_iff_iff, Bool.and_eq_true, isDisjoint_iff, isDisjoint_iff, isDisjoint_iff,
+      disjoint_union_left]
+
+/-- Disjointness splits over union on the right. -/
+theorem disjoint_union_right (a b c : Std.ExtHashMap α β) :
+    disjoint a (b ∪ c) ↔ disjoint a b ∧ disjoint a c := by
+  rw [disjoint_symm, disjoint_union_left, disjoint_symm b, disjoint_symm c]
+
+/-- `isDisjoint a (b ∪ c) = isDisjoint a b && isDisjoint a c`. -/
+theorem isDisjoint_union_right (a b c : Std.ExtHashMap α β) :
+    isDisjoint a (b ∪ c) = (isDisjoint a b && isDisjoint a c) := by
+  rw [Bool.eq_iff_iff, Bool.and_eq_true, isDisjoint_iff, isDisjoint_iff, isDisjoint_iff,
+      disjoint_union_right]
+
+/-- Union of hash maps is associative.
+    Requires `LawfulBEq α` for the extensionality argument. -/
+theorem union_assoc [LawfulBEq α] (a b c : Std.ExtHashMap α β) :
+    (a ∪ b) ∪ c = a ∪ (b ∪ c) := by
+  ext k
+  simp only [getElem?_union, Option.or_assoc]
+
 end Std.ExtHashMap
 
 /-- A "maybe-map": either a concrete hash map or an overlap sentinel,
@@ -52,5 +92,28 @@ def disjointUnion (m₁ m₂ : MMap α β) : MMap α β :=
     match Std.ExtHashMap.disjointUnion a b with
     | .some m => some m
     | .none   => none
+
+/-- `MMap.disjointUnion` is associative.
+    Requires `LawfulBEq α` for `ExtHashMap.union_assoc`. -/
+theorem disjointUnion_assoc [LawfulBEq α] (m₁ m₂ m₃ : MMap α β) :
+    (m₁.disjointUnion m₂).disjointUnion m₃ =
+    m₁.disjointUnion (m₂.disjointUnion m₃) := by
+  match m₁, m₂, m₃ with
+  -- Cases where a `none` appears: both sides reduce to `none` structurally.
+  | none,   _,      _      => rfl
+  | some _, none,   _      => rfl
+  -- m₃ = none: inner `some a ⊎ some b` may be stuck, so split on isDisjoint a b.
+  | some a, some b, none   =>
+    simp only [disjointUnion, Std.ExtHashMap.disjointUnion]
+    rcases h : Std.ExtHashMap.isDisjoint a b <;> simp_all
+  -- Main case: split on all three atomic disjointness predicates.
+  | some a, some b, some c =>
+    simp only [disjointUnion, Std.ExtHashMap.disjointUnion]
+    rcases h12 : Std.ExtHashMap.isDisjoint a b <;>
+    rcases h13 : Std.ExtHashMap.isDisjoint a c <;>
+    rcases h23 : Std.ExtHashMap.isDisjoint b c <;>
+    simp_all [Std.ExtHashMap.isDisjoint_union_left,
+              Std.ExtHashMap.isDisjoint_union_right,
+              Std.ExtHashMap.union_assoc]
 
 end MMap
