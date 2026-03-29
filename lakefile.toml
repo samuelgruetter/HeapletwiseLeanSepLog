@@ -1,6 +1,6 @@
-name = "HeapletwiseLeanSepLog"
+name = "HeapletwiseSepLog"
 version = "0.1.0"
-defaultTargets = ["HeapletwiseLeanSepLog"]
+defaultTargets = ["HeapletwiseSepLog"]
 
 [[lean_lib]]
-name = "HeapletwiseLeanSepLog"
+name = "HeapletwiseSepLog"

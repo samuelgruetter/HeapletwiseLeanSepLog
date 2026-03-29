@@ -1,4 +1,4 @@
-import HeapletwiseLeanSepLog.DisjointUnion
+import HeapletwiseSepLog.DisjointUnion
 
 abbrev Address := UInt64
 abbrev Byte := UInt8

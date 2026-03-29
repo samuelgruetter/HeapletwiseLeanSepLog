@@ -1,4 +1,4 @@
-import HeapletwiseLeanSepLog.DisjointUnion
+import HeapletwiseSepLog.DisjointUnion
 
 private def mm (pairs: List (UInt32 × UInt8)) : MMap UInt32 UInt8 :=
   MMap.some (Std.ExtHashMap.ofList pairs)
