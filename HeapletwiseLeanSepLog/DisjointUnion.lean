@@ -79,6 +79,16 @@ def isSubmap [BEq β] (m₁ m₂ : Std.ExtHashMap α β) : Bool :=
 def subtract [BEq β] (m₁ m₂ : Std.ExtHashMap α β) : Option (Std.ExtHashMap α β) :=
   if isSubmap m₂ m₁ then some (m₁ \ m₂) else none
 
+def disjointUnionMany (ms : List (Std.ExtHashMap α β)) : Option (Std.ExtHashMap α β) :=
+  ms.foldr
+    (fun m acc => match acc with
+                  | some res => disjointUnion res m
+                  | none => none)
+    (some ∅)
+
+def splits (m : Std.ExtHashMap α β) (ms : List (Std.ExtHashMap α β)) : Prop :=
+  disjointUnionMany ms = some m
+
 end Std.ExtHashMap
 
 /-- A "maybe-map": either a concrete hash map or an overlap sentinel,
@@ -152,5 +162,8 @@ def subtract [BEq β] (m₁ m₂ : MMap α β) : MMap α β :=
     match Std.ExtHashMap.subtract a b with
     | .some m => some m
     | .none   => none
+
+def disjointUnionMany (ms : List (MMap α β)) : MMap α β :=
+  ms.foldr disjointUnion (.some ∅)
 
 end MMap
