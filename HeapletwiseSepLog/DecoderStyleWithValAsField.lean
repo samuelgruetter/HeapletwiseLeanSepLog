@@ -4,11 +4,14 @@ abbrev Address := UInt64
 abbrev Byte := UInt8
 abbrev Mem := Std.ExtHashMap Address Byte
 
-structure Heaplet {Val : Type}
-  (decode : Mem -> Address -> Option Val) (val: Val) (addr : Address) : Type
+structure OnHeapAt
+  {T : Type} (decode : Mem -> Address -> Option T) (addr : Address) : Type
 where
+  val : T
   mem : Mem
   connection : decode mem addr = some val
+
+infix:80 " @ " => OnHeapAt /- TODO will this class with @make_implicit_args_explicit ? -/
 
 structure MyRecord where
   x: UInt64
@@ -29,15 +32,16 @@ def wp (prog : List Instr) (initial : Mem) (post : Mem -> Prop) : Prop := by sor
 def incFieldX : List Instr := by sorry
 
 theorem incFieldX_correct (a_r : Address) (a_vs : Address)
-  (r : MyRecord) (vs : List Nat)
-  (h_r : Heaplet myRecord r a_r)
-  (h_vs : Heaplet (array (uint 8) 16) vs a_vs)
-  (boundX : r.x.toNat < UInt64.size - 1)
+  (r : myRecord @ a_r)
+  (vs : (array (uint 8) 16) @ a_vs)
+  (boundX : r.val.x.toNat < UInt64.size - 1)
   (m : Mem)
-  (D : m.splits [h_r.mem, h_vs.mem])
+  (D : m.splits [r.mem, vs.mem])
   (post : Mem -> Prop):
-  (forall h_r' : Heaplet myRecord { r with x := r.x + 1 } a_r,
-    m.splits [h_r'.mem, h_vs.mem] ->
+  (forall r' : myRecord @ a_r,
+    r'.val.x == r.val.x + 1 ->
+    r'.val.y == r.val.y ->
+    m.splits [r'.mem, vs.mem] ->
     post m) ->
   wp incFieldX m post
   := by sorry
